@@ -7,12 +7,62 @@ import posixpath
 from PyQt6.QtWidgets import QApplication
 
 from stimpack.rpc.transceiver import MySocketClient
-from stimpack.visual_stim.screen import Screen
+from stimpack.visual_stim.screen import Screen, SubScreen
 from stimpack.experiment.server import BaseServer
 from stimpack.experiment.util import config_tools
 from stimpack.device import daq
 from stimpack.device.locomotion.loco_managers.keytrac_managers import KeytracClosedLoopManager
 from stimpack.util import ROOT_DIR
+
+def get_subscreen(dir):
+    '''
+    Tuned for ballrig with "rotate left" in /etc/X11/xorg.conf
+    Because screens are flipped l<->r, viewport_ll is actually lower right corner.
+    '''
+    north_w = 2.956e-2
+    side_w = 2.96e-2
+
+    # set coordinates as a function of direction
+    if dir == 'w':
+       # set screen width and height
+       h = 3.10e-2
+       pa = (-north_w/2, -side_w/2, -h/2)
+       pb = (-north_w/2, +side_w/2, -h/2)
+       pc = (-north_w/2, -side_w/2, +h/2)
+       viewport_ll = (-0.6615, -0.496875)
+       viewport_width = -0.6615 - (-0.3575)
+       viewport_height = -0.290 - (-0.496875)
+    elif dir == 'n':
+       # set screen width and height
+       h = 3.29e-2
+       pa = (-north_w/2, +side_w/2, -h/2)
+       pb = (+north_w/2, +side_w/2, -h/2)
+       pc = (-north_w/2, +side_w/2, +h/2)
+       viewport_ll = (+0.265, -0.1853)
+       viewport_width = +0.265 - 0.56
+       viewport_height = +0.02 - (-0.1853)
+    elif dir == 'e':
+        # set screen width and height
+        h = 3.40e-2
+        pa = (+north_w/2, +side_w/2, -h/2)
+        pb = (+north_w/2, -side_w/2, -h/2)
+        pc = (+north_w/2, +side_w/2, +h/2)
+        viewport_ll = (-0.65875, +0.1325)
+        viewport_width = -0.65875 - (-0.375)
+        viewport_height = +0.3525 - (+0.1325) # should be +0.3450 for top, but had to adjust to fix tear across screens
+    elif dir == 'aux':
+        # set screen width and height
+        h = 3.29e-2
+        pa = (-north_w/2, +side_w/2, -h/2)
+        pb = (+north_w/2, +side_w/2, -h/2)
+        pc = (-north_w/2, +side_w/2, +h/2)
+        viewport_ll = (-1, -1)
+        viewport_width = 2
+        viewport_height = 2
+    else:
+        raise ValueError('Invalid direction.')
+
+    return SubScreen(pa=pa, pb=pb, pc=pc, viewport_ll=viewport_ll, viewport_width=abs(viewport_width), viewport_height=abs(viewport_height))
 
 class BaseClient():
     def __init__(self, cfg):
@@ -34,11 +84,15 @@ class BaseClient():
             else:
                 disp_server, disp_id = -1, -1
             
+            # visual_stim_kwargs = {
+            #     'screens': [Screen(server_number=disp_server, id=disp_id, fullscreen=False, vsync=True, square_size=(0.1, 0.1),
+            #                        pa=(-0.15, 0.15, -0.15), pb=(+0.15, 0.15, -0.15), pc=(-0.15, 0.15, +0.15))] # -45 to 45 deg in both theta and phi
+            # }
             visual_stim_kwargs = {
-                'screens': [Screen(server_number=disp_server, id=disp_id, fullscreen=False, vsync=True, square_size=(0.1, 0.1),
-                                   pa=(-0.15, 0.15, -0.15), pb=(+0.15, 0.15, -0.15), pc=(-0.15, 0.15, +0.15))] # -45 to 45 deg in both theta and phi
+                'screens': [Screen(subscreens=[get_subscreen('w'), get_subscreen('n'), get_subscreen('e')], 
+                                   server_number=disp_server, id=disp_id, fullscreen=False, square_size=(0.1, 0.1), vsync=True)] # -45 to 45 deg in both theta and phi
             }
-            
+
             loco_class = KeytracClosedLoopManager
             loco_kwargs = {
                 'host':          '127.0.0.1',
