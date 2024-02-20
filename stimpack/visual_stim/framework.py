@@ -130,7 +130,8 @@ class StimDisplay(QOpenGLWidget):
         self.ctx.extra['n_textures_loaded'] = 0
 
         # clear the whole screen
-        self.clear_viewports(color=(0, 0, 0, 1), viewports=None)
+        # self.clear_viewports(color=(0, 0, 0, 1), viewports=None)
+        self.ctx.fbo.clear(0, 0, 0, 1)
 
         # initialize square program
         self.square_program.initialize(self.ctx)
@@ -152,7 +153,7 @@ class StimDisplay(QOpenGLWidget):
             viewports = [viewports]
         
         for viewport in viewports:
-            self.ctx.clear(red=color[0], green=color[1], blue=color[2], alpha=color[3], viewport=viewport)
+            self.ctx.fbo.clear(red=color[0], green=color[1], blue=color[2], alpha=color[3], viewport=viewport)
         
     def paintGL(self):
         # t0 = time.time() # benchmarking
@@ -172,11 +173,10 @@ class StimDisplay(QOpenGLWidget):
         # Get viewport for corner square
         self.square_program.set_viewport(display_width, display_height)
 
-        # clear the viewports if clear_viewports_flag is set, and reset the flag
-        if self.clear_viewports_flag:
-            self.clear_viewports(color=self.idle_background, viewports=self.subscreen_viewports)
-            self.clear_viewports_flag = False
-        
+        # clear the previous frame across the whole display
+        self.ctx.detect_framebuffer().use()
+        self.ctx.fbo.clear(0, 0, 0, 1)
+
         # draw the stimulus
         if self.stim_list:
             if self.pre_render:
@@ -202,7 +202,12 @@ class StimDisplay(QOpenGLWidget):
                                   self.subscreen_viewports,
                                   perspectives,
                                   subject_position=self.subject_position)
+                else:
+                    self.clear_viewports(color=self.idle_background, viewports=self.subscreen_viewports)
+
             self.profile_frame_times.append(t)
+        else:
+            self.clear_viewports(color=self.idle_background, viewports=self.subscreen_viewports)
 
         # draw the corner square
         self.square_program.paint()
