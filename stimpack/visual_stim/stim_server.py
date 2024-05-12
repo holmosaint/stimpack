@@ -33,6 +33,8 @@ def launch_screen(screen, **kwargs):
 
         # Force Xwayland if Wayland
         new_env_vars['QT_QPA_PLATFORM'] = 'xcb'
+        # new_env_vars['__GLX_VENDOR_LIBRARY_NAME'] = 'nvidia'
+        # new_env_vars['__NV_PRIME_RENDER_OFFLOAD'] = '1'
 
     # launch the server and return the resulting client
     return launch_server(stimpack.visual_stim.framework, screen=screen.serialize(), new_env_vars=new_env_vars, **kwargs)
