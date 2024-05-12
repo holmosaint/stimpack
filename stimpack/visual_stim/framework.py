@@ -141,72 +141,74 @@ class StimDisplay(QOpenGLWidget):
 
     def initializeGL(self):
          # get OpenGL context
-        if platform.system() == 'Linux' and os.getenv('XDG_SESSION_TYPE').lower() == 'wayland':
-            # On Wayland, we need to use EGL for context creation
+        # if platform.system() == 'Linux' and os.getenv('XDG_SESSION_TYPE').lower() == 'wayland':
+        #     # On Wayland, we need to use EGL for context creation
 
-            from OpenGL import EGL
-            from OpenGL.GL import GL_VERSION, glGetString
+        #     from OpenGL import EGL
+        #     from OpenGL.GL import GL_VERSION, glGetString
 
-            def create_egl_context():
-                # Get an EGL display connection
-                display = EGL.eglGetDisplay(EGL.EGL_DEFAULT_DISPLAY)
-                if display == EGL.EGL_NO_DISPLAY:
-                    raise RuntimeError("Failed to get EGL display")
+        #     def create_egl_context():
+        #         # Get an EGL display connection
+        #         display = EGL.eglGetDisplay(EGL.EGL_DEFAULT_DISPLAY)
+        #         if display == EGL.EGL_NO_DISPLAY:
+        #             raise RuntimeError("Failed to get EGL display")
 
-                # Initialize the EGL display connection
-                major, minor = EGL.EGLint(), EGL.EGLint()
-                if not EGL.eglInitialize(display, major, minor):
-                    raise RuntimeError("Unable to initialize EGL")
+        #         # Initialize the EGL display connection
+        #         major, minor = EGL.EGLint(), EGL.EGLint()
+        #         if not EGL.eglInitialize(display, major, minor):
+        #             raise RuntimeError("Unable to initialize EGL")
                 
-                # Specify the minimum configuration attributes
-                config_attribs = [
-                    EGL.EGL_SURFACE_TYPE, EGL.EGL_PBUFFER_BIT,
-                    EGL.EGL_BLUE_SIZE, 8,
-                    EGL.EGL_GREEN_SIZE, 8,
-                    EGL.EGL_RED_SIZE, 8,
-                    EGL.EGL_DEPTH_SIZE, 8,
-                    EGL.EGL_RENDERABLE_TYPE, EGL.EGL_OPENGL_BIT,
-                    EGL.EGL_NONE
-                ]
-                config_attribs = (EGL.EGLint * len(config_attribs))(*config_attribs)
+        #         # Specify the minimum configuration attributes
+        #         config_attribs = [
+        #             EGL.EGL_SURFACE_TYPE, EGL.EGL_PBUFFER_BIT,
+        #             EGL.EGL_BLUE_SIZE, 8,
+        #             EGL.EGL_GREEN_SIZE, 8,
+        #             EGL.EGL_RED_SIZE, 8,
+        #             EGL.EGL_DEPTH_SIZE, 8,
+        #             EGL.EGL_RENDERABLE_TYPE, EGL.EGL_OPENGL_BIT,
+        #             EGL.EGL_NONE
+        #         ]
+        #         config_attribs = (EGL.EGLint * len(config_attribs))(*config_attribs)
 
-                # Choose a configuration
-                num_configs = EGL.EGLint()
-                config = EGL.EGLConfig()
-                if not EGL.eglChooseConfig(display, config_attribs, config, 1, num_configs):
-                    raise RuntimeError("Failed to choose config")
+        #         # Choose a configuration
+        #         num_configs = EGL.EGLint()
+        #         config = EGL.EGLConfig()
+        #         if not EGL.eglChooseConfig(display, config_attribs, config, 1, num_configs):
+        #             raise RuntimeError("Failed to choose config")
 
-                # Context attributes for specifying OpenGL version
-                context_attribs = [
-                    EGL.EGL_CONTEXT_MAJOR_VERSION, 3,
-                    EGL.EGL_CONTEXT_MINOR_VERSION, 3,
-                    EGL.EGL_CONTEXT_OPENGL_PROFILE_MASK, EGL.EGL_CONTEXT_OPENGL_CORE_PROFILE_BIT,
-                    EGL.EGL_NONE
-                ]
-                context_attribs = (EGL.EGLint * len(context_attribs))(*context_attribs)
+        #         # Context attributes for specifying OpenGL version
+        #         context_attribs = [
+        #             EGL.EGL_CONTEXT_MAJOR_VERSION, 3,
+        #             EGL.EGL_CONTEXT_MINOR_VERSION, 3,
+        #             EGL.EGL_CONTEXT_OPENGL_PROFILE_MASK, EGL.EGL_CONTEXT_OPENGL_CORE_PROFILE_BIT,
+        #             EGL.EGL_NONE
+        #         ]
+        #         context_attribs = (EGL.EGLint * len(context_attribs))(*context_attribs)
 
-                # Create an EGL context
-                ctx = EGL.eglCreateContext(display, config, EGL.EGL_NO_CONTEXT, context_attribs)
-                if ctx == EGL.EGL_NO_CONTEXT:
-                    raise RuntimeError("Failed to create EGL context")
+        #         # Create an EGL context
+        #         ctx = EGL.eglCreateContext(display, config, EGL.EGL_NO_CONTEXT, context_attribs)
+        #         if ctx == EGL.EGL_NO_CONTEXT:
+        #             raise RuntimeError("Failed to create EGL context")
                 
-                return display, ctx, config
+        #         return display, ctx, config
 
-            display, ctx, config = create_egl_context()
+        #     display, ctx, config = create_egl_context()
 
-            # Make the context current
-            if not EGL.eglMakeCurrent(display, EGL.EGL_NO_SURFACE, EGL.EGL_NO_SURFACE, ctx):
-                raise RuntimeError("Failed to make the EGL context current")
+        #     # Make the context current
+        #     if not EGL.eglMakeCurrent(display, EGL.EGL_NO_SURFACE, EGL.EGL_NO_SURFACE, ctx):
+        #         raise RuntimeError("Failed to make the EGL context current")
 
-            # Verify the context by printing the OpenGL version
-            print("OpenGL version:", glGetString(GL_VERSION).decode())
+        #     # Verify the context by printing the OpenGL version
+        #     print("OpenGL version:", glGetString(GL_VERSION).decode())
 
-            # Grab the EGL context with moderngl
-            self.ctx = moderngl.get_context()
+        #     # Grab the EGL context with moderngl
+        #     self.ctx = moderngl.get_context()
         
-        else: 
-            # On Linux-Xorg, Mac, or Windows, we can use the default moderngl context creation
-            self.ctx = moderngl.create_context(require=330) # TODO: can we make this run headless in render_movie_mode?
+        # else: 
+        #     # On Linux-Xorg, Mac, or Windows, we can use the default moderngl context creation
+        #     self.ctx = moderngl.create_context(require=330) # TODO: can we make this run headless in render_movie_mode?
+        
+        self.ctx = moderngl.create_context(require=330) # TODO: can we make this run headless in render_movie_mode?
 
         self.ctx.enable(moderngl.BLEND) # enable alpha blending
         self.ctx.enable(moderngl.DEPTH_TEST) # enable depth test

@@ -30,6 +30,10 @@ def launch_screen(screen, **kwargs):
             new_env_vars['DISPLAY'] = ':{}.0'.format(screen.server_number)
         else:
             new_env_vars['DISPLAY'] = ':{}.{}'.format(screen.server_number, screen.id)
+
+        # Force Xwayland if Wayland
+        new_env_vars['QT_QPA_PLATFORM'] = 'xcb'
+
     # launch the server and return the resulting client
     return launch_server(stimpack.visual_stim.framework, screen=screen.serialize(), new_env_vars=new_env_vars, **kwargs)
 
