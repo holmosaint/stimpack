@@ -1241,3 +1241,37 @@ class PixMap(TexturedCylinder):
         super().destroy()
         self.existing_shm.close()
 
+
+
+class SavedMeshMovie(BaseProgram):
+    def __init__(self, screen):
+        super().__init__(screen=screen)
+        self.use_texture = True
+
+    def configure(self):
+
+        color = (1,1,1,1)
+        distance = 2
+
+        #load flymax mesh that defines polar warping
+        fnmesh = 'mesh_7_31_stimpack.txt' #usual larger mesh causing error 
+        flymax_mesh = np.loadtxt('/Users/wienecke/stimpack_data/' + fnmesh, dtype=np.float32)
+        mesh_num_phi = int(fnmesh.split('_')[1])
+        mesh_num_theta = int(fnmesh.split('_')[2])
+        self.stim_object = shapes.GlMesh(flymax_mesh, mesh_num_phi, mesh_num_theta, color, distance)
+
+        #load flymax movie (select one example frame)
+        fnbin = 'SinEdge_128_256_40_0_240520152721_.bin'
+        flymax_movie = np.fromfile('/Users/wienecke/stimpack_data/' + fnbin, dtype=np.float32)
+        bin_num_phi = int(fnbin.split('_')[1])
+        bin_num_theta = int(fnbin.split('_')[2])
+        bin_num_time = int(fnbin.split('_')[3])
+        flymax_movie = flymax_movie.reshape(bin_num_time,bin_num_phi,bin_num_theta)
+        flymax_movie = np.transpose(flymax_movie, (1, 2, 0))
+        texture_patch = flymax_movie #arbitrarily choose frame 20
+        texture_patch = (255*texture_patch).astype(np.uint8)
+        img = texture_patch[:,:,20]
+        self.add_texture_gl(img, texture_interpolation='LINEAR')
+
+    def eval_at(self, t, subject_position={'x':0, 'y':0, 'z':0, 'theta':0, 'phi':0, 'roll':0}):
+        pass

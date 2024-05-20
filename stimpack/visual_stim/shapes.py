@@ -96,6 +96,47 @@ class GlQuad(GlVertices):
             self.add(GlTri(v1, v2, v3, color))
             self.add(GlTri(v1, v3, v4, color))
 
+
+class GlMesh(GlVertices):
+    def __init__(self, mesh, mesh_num_phi, mesh_num_theta, color, distance):
+
+        super().__init__()
+
+        meshy = mesh[:,0]
+        meshx = mesh[:,1]
+        meshi = mesh[:,4]
+        meshu = np.arange(mesh_num_phi)/(mesh_num_phi-1)
+        meshv = np.arange(mesh_num_theta)/(mesh_num_theta-1)
+
+        for ii in np.arange(mesh_num_phi-1):
+            for jj in np.arange(mesh_num_theta-1):
+
+                ki = mesh_num_theta*ii + jj
+                kj = mesh_num_theta*(ii + 1) + jj
+                kk = mesh_num_theta*(ii + 1) + (jj + 1)
+                kl = mesh_num_theta*ii + (jj + 1)
+
+                if 1: #(meshi[ki] and meshi[kj] and meshi[kk] and meshi[kl]): #skip drawing texel if meshi is zero
+                    
+                    tc1 = (meshv[jj], meshu[ii])
+                    v1 = (meshx[ki], distance, meshy[ki])
+
+                    tc2 = (meshv[jj], meshu[ii + 1])
+                    v2 = (meshx[kj], distance, meshy[kj])
+
+                    tc3 = (meshv[jj + 1], meshu[ii + 1])
+                    v3 = (meshx[kk], distance, meshy[kk])
+
+                    tc4 = (meshv[jj + 1], meshu[ii])
+                    v4 = (meshx[kl], distance, meshy[kl])
+
+                    self.add(GlQuad(v1, v2, v3, v4, 
+                                     color,
+                                     tc1=tc1, tc2=tc2, tc3=tc3, tc4=tc4,
+                                     texture_shift=(0, 0),
+                                     use_texture=True))
+
+
 class GlCircle(GlVertices):
     '''
     Circle parallel to the xz plane
