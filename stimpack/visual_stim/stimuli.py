@@ -164,6 +164,130 @@ class CheckerboardFloor(BaseProgram):
 
     def eval_at(self, t, subject_position={'x':0, 'y':0, 'z':0, 'theta':0, 'phi':0, 'roll':0}):
         pass
+    
+# test - remove later    
+# class CheckerboardFloorZ(BaseProgram):
+#     def __init__(self, screen):
+#         super().__init__(screen=screen)
+#         self.use_texture = True
+
+#     def configure(self, mean, contrast, center=(0,0,-0.1), side_length=10, patch_width=1):
+#         """
+#         Grayscale Checkerboard floor.
+
+#         :param mean: float, mean of the checkerboard (0-1)
+#         :param contrast: float, contrast of the checkerboard (0-1)
+#         :param center: (x,y,z) meters
+#         :param side_length: meters or (x, y) tuple of meters
+#         """
+#         self.mean = mean
+#         self.contrast = contrast
+#         self.patch_width = patch_width
+
+#         if isinstance(side_length, tuple):
+#             x_length = side_length[0]
+#             y_length = side_length[1]
+#         else:
+#             x_length = side_length
+#             y_length = side_length
+        
+#         center_x, center_y, center_z = center
+
+#         v1 = (-x_length/2 + center_x, -y_length/2 + center_y, center_z)
+#         v2 = ( x_length/2 + center_x, -y_length/2 + center_y, center_z)
+#         v3 = ( x_length/2 + center_x,  y_length/2 + center_y, center_z)
+#         v4 = (-x_length/2 + center_x,  y_length/2 + center_y, center_z)
+
+#         # each texture patch is 2x2 checkerboard patches
+#         n_texture_patches_x = x_length / (self.patch_width * 2)
+#         n_texture_patches_y = y_length / (self.patch_width * 2)
+        
+#         tc1 = (0,                   0)
+#         tc2 = (n_texture_patches_x, 0)
+#         tc3 = (n_texture_patches_x, n_texture_patches_y)
+#         tc4 = (0,                   n_texture_patches_y)
+
+#         self.stim_object = shapes.GlQuad(v1, v2, v3, v4, (1,1,1,1),
+#                                         tc1=tc1, tc2=tc2, tc3=tc3, tc4=tc4,
+#                                         texture_shift=(0, 0), use_texture=True)
+
+#         # make and apply the texture
+#         texture_patch = np.array([[1, -1], [-1, 1]]) # 2x2 checkerboard patch
+#         img = (255*(mean + contrast*mean*texture_patch)).astype(np.uint8)
+#         self.add_texture_gl(img, texture_interpolation='NEAREST')
+
+#     def eval_at(self, t, subject_position={'x':0, 'y':0, 'z':0, 'theta':0, 'phi':0, 'roll':0}):
+#         pass
+    
+    
+class CheckerboardWall(BaseProgram):
+    def __init__(self, screen):
+        super().__init__(screen=screen)
+        self.use_texture = True
+
+    def configure(self, mean, contrast, center=(0,0,-0.1), side_length=10, patch_width=1):
+        """
+        Grayscale Checkerboard wall.
+
+        :param mean: float, mean of the checkerboard (0-1)
+        :param contrast: float, contrast of the checkerboard (0-1)
+        :param center: (x,y,z) meters
+        :param side_length: meters or (x, y) tuple of meters
+        """
+        self.mean = mean
+        self.contrast = contrast
+        self.patch_width = patch_width
+
+        if isinstance(side_length, tuple):
+            x_length = side_length[0]
+            y_length = side_length[1]
+            height = side_length[2]
+        else:
+            x_length = side_length
+            y_length = side_length
+            height = side_length
+        
+        center_x, center_y, center_z = center
+
+        v1 = (-x_length/2 + center_x, -y_length/2 + center_y, center_z)
+        v2 = (-x_length/2 + center_x, -y_length/2 + center_y, center_z + height)
+        v3 = (-x_length/2 + center_x,  y_length/2 + center_y, center_z)
+        v4 = (-x_length/2 + center_x,  y_length/2 + center_y, center_z + height)
+
+        # each texture patch is 2x2 checkerboard patches
+        n_texture_patches_x = x_length / (self.patch_width * 2)
+        n_texture_patches_y = y_length / (self.patch_width * 2)
+        # n_texture_patches_y = abs(x_length) / (self.patch_width * 2)
+        # n_texture_patches_x = abs(y_length) / (self.patch_width * 2)
+        print((n_texture_patches_x,n_texture_patches_y))
+        
+        tc1 = (0,                   0)
+        tc2 = (n_texture_patches_x, 0)
+        tc3 = (n_texture_patches_x, n_texture_patches_y)
+        tc4 = (0,                   n_texture_patches_y)
+        
+        # default: tc1=(0, 0), tc2=(1, 0), tc3=(1, 1), tc4=(0, 1)
+        # tc1 = (0,                   0)
+        # tc2 = (n_texture_patches_x, 0)
+        # tc3 = (n_texture_patches_x, n_texture_patches_y)
+        # tc4 = (0,                   n_texture_patches_y)
+        print((tc1,tc2,tc3,tc4))
+
+        self.stim_object = shapes.GlQuad(v1, v2, v3, v4, (1,1,1,1),
+                                        tc1=tc1, tc2=tc2, tc3=tc3, tc4=tc4,
+                                        texture_shift=(0, 0), use_texture=True)
+
+        # make and apply the texture
+        texture_patch = np.array([[1, -1], [-1, 1]]) # 2x2 checkerboard patch
+        # texture_patch = np.array([[-1, 1], [1, -1]]) # 2x2 checkerboard patch
+        img = (255*(mean + contrast*mean*texture_patch)).astype(np.uint8)
+        print(img)
+        self.add_texture_gl(img, texture_interpolation='NEAREST')
+        # self.add_texture_gl(img, texture_interpolation='LINEAR') # blurred
+
+    def eval_at(self, t, subject_position={'x':0, 'y':0, 'z':0, 'theta':0, 'phi':0, 'roll':0}):
+        pass
+
 
 class MovingPatch(BaseProgram):
     def __init__(self, screen):
@@ -766,6 +890,64 @@ class RotatingGrating(CylindricalGrating):
         self.theta_prev = theta
         self.phi_prev = phi
         self.angle_prev = angle
+        
+class RotatingGratingNew(CylindricalGrating):
+    def __init__(self, screen):
+        super().__init__(screen=screen)
+
+    def configure(self, rate=10, hold_duration = 0, period=20, mean=0.5, contrast=1.0, offset=0.0, grating_angle=0.0, profile='sine',
+                  color=[1, 1, 1, 1], cylinder_radius=1, cylinder_location=(0,0,0), cylinder_height=10, theta=0, phi=0, angle=0.0, direction=0.0,
+                  n_steps_x=512, n_steps_y=512):
+        """
+        Subclass of CylindricalGrating that rotates the grating along the varying axis of the grating.
+
+        Note that the rotation effect is achieved by translating the texture on a semi-cylinder. This
+        allows for arbitrary spatial periods to be achieved with no discontinuities in the grating
+
+        :param rate: rotation rate, degrees/sec
+        :param hold_duration: duration for which the initial image is held (seconds)
+        :other params: see CylindricalGrating, TexturedCylinder
+        """
+        super().configure(period=period, mean=mean, contrast=contrast, offset=offset, grating_angle=grating_angle, profile=profile,
+                          color=color, cylinder_radius=cylinder_radius, cylinder_location=cylinder_location, cylinder_height=cylinder_height,
+                          theta=theta, phi=phi, angle=angle, n_steps_x=n_steps_x, n_steps_y=n_steps_y)
+
+        self.rate = make_as_trajectory(rate)
+        self.hold_duration = hold_duration
+
+        self.theta_prev = return_for_time_t(self.theta, 0)
+        self.phi_prev = return_for_time_t(self.phi, 0)
+        self.angle_prev = return_for_time_t(self.angle, 0)
+        self.direction = direction
+        self.direction_prev = return_for_time_t(self.direction, 0)
+        self.t_prev = 0
+
+    def eval_at(self, t, subject_position={'x':0, 'y':0, 'z':0, 'theta':0, 'phi':0, 'roll':0}):
+        theta = return_for_time_t(self.theta, t)
+        phi = return_for_time_t(self.phi, t)
+        angle = return_for_time_t(self.angle, t)
+        rate = return_for_time_t(self.rate, t)
+        direction = return_for_time_t(self.direction, t)
+
+        if t < self.hold_duration:
+            grating_rotation_dt = 0
+            self.t_prev = self.hold_duration
+        else:
+            grating_rotation_dt = rate * (t - self.t_prev)
+            self.t_prev = t
+
+        # Convert direction to radians
+        direction_rad = np.radians(direction)
+        # Calculate shift components
+        shift_u = np.cos(direction_rad) * grating_rotation_dt / self.period
+        shift_v = np.sin(direction_rad) * grating_rotation_dt / self.period
+        # print(shift_u, shift_v)
+
+        self.stim_object = self.stim_object.shift_texture((shift_u, shift_v))
+        self.theta_prev = theta
+        self.phi_prev = phi
+        self.angle_prev = angle
+        self.direction_prev = direction
 
 class ExpandingEdges(TexturedCylinder):
     def __init__(self, screen):

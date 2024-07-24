@@ -13,6 +13,7 @@ from stimpack.experiment.server import BaseServer
 from stimpack.experiment.util import config_tools
 from stimpack.device import daq
 from stimpack.device.locomotion.loco_managers.keytrac_managers import KeytracClosedLoopManager
+from stimpack.device.locomotion.loco_managers.arduino_managers import ArduinoClosedLoopManager
 from stimpack.util import ROOT_DIR
 
 class BaseClient():
@@ -38,13 +39,18 @@ class BaseClient():
                                    pa=(-0.15, 0.15, -0.15), pb=(+0.15, 0.15, -0.15), pc=(-0.15, 0.15, +0.15))] # -45 to 45 deg in both theta and phi
             }
             
-            loco_class = KeytracClosedLoopManager
+            # loco_class = KeytracClosedLoopManager
+            # loco_kwargs = {
+            #     'host':          '127.0.0.1',
+            #     'port':           33335,
+            #     'python_bin':    sys.executable,
+            #     'kt_py_fn':      os.path.join(ROOT_DIR, "device/locomotion/keytrac/keytrac.py"),
+            #     'relative_control': 'True',
+            # }
+            loco_class = ArduinoClosedLoopManager
             loco_kwargs = {
                 'host':          '127.0.0.1',
                 'port':           33335,
-                'python_bin':    sys.executable,
-                'kt_py_fn':      os.path.join(ROOT_DIR, "device/locomotion/keytrac/keytrac.py"),
-                'relative_control': 'True',
             }
             
             server = BaseServer(host='127.0.0.1',
